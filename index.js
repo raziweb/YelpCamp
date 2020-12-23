@@ -1,6 +1,8 @@
 const express = require('express');
 const path = require('path');
 const ejsMate = require('ejs-mate');
+const Joi = require('joi');
+const campgroundSchema = require('./schemas');
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
 const mongoose = require("mongoose");
@@ -23,6 +25,20 @@ app.use(express.urlencoded({ extended: true }));
 //to use HTTP verbs other than GET and POST
 app.use(methodOverride('_method'));
 
+//middleware function to validate campground
+const validateCampground = (req, res, next) => {
+    //extracting error
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        //extracting message from error
+        const msg = error.details.map(el => el.message).join(',');
+        throw new ExpressError(msg, 400);
+    }
+    else {
+        next();
+    }
+}
+
 app.set('view engine', 'ejs');
 //ejs itself has different engines
 app.engine('ejs', ejsMate); 
@@ -40,16 +56,10 @@ app.get('/campgrounds/new', (req,res)=>{
 })
 
 //POSTs new Campground
-app.post('/campgrounds', catchAsync(async (req, res) => {
-    if (!req.body.campground) {
-        //to handle error if someone posts data from anywhere other than browser(we handled client side validation with bootstrap), like postman
-        throw new ExpressError('Invalid Form data', 400);
-    }
-    else {
-        const campground = new Campground(req.body.campground);
-        await campground.save();
-        res.redirect(`/campgrounds/${campground._id}`);
-    }
+app.post('/campgrounds', validateCampground, catchAsync(async (req, res) => {
+    const campground = new Campground(req.body.campground);
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
 }))
 
 //to get a specific Campground
@@ -67,7 +77,7 @@ app.get('/campgrounds/:id/edit', catchAsync(async (req, res)=>{
 }))
 
 //To update the edited campground and showing it
-app.put('/campgrounds/:id', catchAsync(async (req, res)=>{
+app.put('/campgrounds/:id', validateCampground, catchAsync(async (req, res)=>{
     const { id } = req.params;
     const campground = await Campground.findByIdAndUpdate(id, req.body.campground);
     res.redirect(`/campgrounds/${campground._id}`);
