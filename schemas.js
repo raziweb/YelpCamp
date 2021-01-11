@@ -1,6 +1,6 @@
 //Joi schemas for validation
 const Joi = require('joi');
-    //schema validation with Joi
+    //campground schema validation with Joi
     const campgroundSchema = Joi.object({
         campground: Joi.object({
             title: Joi.string().required(),
@@ -12,3 +12,11 @@ const Joi = require('joi');
     });
 
 module.exports = campgroundSchema;
+
+//review schema validation with joi
+module.exports.reviewSchema = Joi.object({
+    review: Joi.object({
+        rating: Joi.number().required(),
+        body: Joi.string().required()
+    }).required()
+})

@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const ejsMate = require('ejs-mate');
 const Joi = require('joi');
-const campgroundSchema = require('./schemas');
+const { campgroundSchema, reviewSchema } = require('./schemas');
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
 const mongoose = require("mongoose");
@@ -18,6 +18,7 @@ mongoose.connect("mongodb://localhost:27017/yelp-camp", {
 
 //requiring the campground model
 const Campground = require('./models/campground');
+const Review = require('./models/review');
 
 const app = express();
 //to parse form data
@@ -28,7 +29,19 @@ app.use(methodOverride('_method'));
 //middleware function to validate campground
 const validateCampground = (req, res, next) => {
     //extracting error
-    const { error } = campgroundSchema.validate(req.body);
+    const { error } = campgroundSchema.validate(req.body); //campgroundSchema from schemas.js
+    if (error) {
+        //extracting message from error
+        const msg = error.details.map(el => el.message).join(',');
+        throw new ExpressError(msg, 400);
+    }
+    else {
+        next();
+    }
+}
+
+const validateReview = (req, res, next) => {
+    const { error } = reviewSchema.validate(req.body); //reviewSchema from schemas.js
     if (error) {
         //extracting message from error
         const msg = error.details.map(el => el.message).join(',');
@@ -65,7 +78,7 @@ app.post('/campgrounds', validateCampground, catchAsync(async (req, res) => {
 //to get a specific Campground
 app.get('/campgrounds/:id', catchAsync(async (req, res)=>{
     const { id } = req.params;
-    const campground = await Campground.findById(id);
+    const campground = await Campground.findById(id).populate('reviews');
     res.render('campgrounds/show', { campground });
 }))
 
@@ -88,6 +101,27 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res)=>{
     const { id } = req.params;
     const campground = await Campground.findByIdAndDelete(id);
     res.redirect(`/campgrounds`);
+}))
+
+//*** REVIEW ROUTES ***//
+
+//Creating a review
+app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res) => {
+    const campground = await Campground.findById(req.params.id);
+    const review = new Review(req.body.review);
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
+}))
+
+//deleting a review
+app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+    await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } }); //pull is a mongo operator used to delete matching items from the specified array
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${id}`);
+
 }))
 
 //If no route matches
