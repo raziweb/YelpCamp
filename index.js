@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const ejsMate = require('ejs-mate');
+const session = require('express-session');
 const ExpressError = require('./utils/ExpressError');
 const mongoose = require("mongoose");
 const methodOverride = require('method-override');
@@ -9,19 +10,34 @@ const reviewRoutes = require('./routes/reviews');
 
 //Connecting to our yelp-camp mongoDb
 mongoose.connect("mongodb://localhost:27017/yelp-camp", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false
 })
 .then(()=>console.log('Database Connected'))
 .catch(err => console.log('Couldnt Connect', err))
 
 const app = express();
+
 app.use(express.urlencoded({ extended: true })); //to parse form data
 app.use(methodOverride('_method')); //to use HTTP verbs other than GET and POST
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.set('view engine', 'ejs');
 app.engine('ejs', ejsMate); //ejs itself has different engines
 app.set('views', path.join(__dirname, 'views'));
+
+const sessionConfig = {
+    secret: 'xyz123',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true,
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, //session cookie will expire in a week
+        maxAge: 1000 * 60 * 60 * 24 * 7
+    }
+}
+app.use(session(sessionConfig));
 
 //*** CAMPGROUND ROUTES***//
 app.use('/campgrounds', campgroundRoutes)
