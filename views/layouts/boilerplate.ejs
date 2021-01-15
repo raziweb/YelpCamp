@@ -13,7 +13,8 @@
 
 <body class="d-flex flex-column vh-100">
     <%- include('../partials/navbar') %> 
-    <main class="container mt-2">
+    <main class="container mt-2 mb-2">
+        <%= success %> 
         <%- body %><!-- body renders the output of the template where layout() has been called, this happens with the help of ejs-mate -->
     </main>
     <%- include('../partials/footer') %> 
