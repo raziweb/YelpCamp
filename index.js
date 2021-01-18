@@ -6,8 +6,13 @@ const flash = require('connect-flash');
 const ExpressError = require('./utils/ExpressError');
 const mongoose = require("mongoose");
 const methodOverride = require('method-override');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user');
+
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
+const userRoutes = require('./routes/users');
 
 //Connecting to our yelp-camp mongoDb
 mongoose.connect("mongodb://localhost:27017/yelp-camp", {
@@ -46,6 +51,21 @@ app.use((req, res, next) => { //middleware to get access to the flash message as
     res.locals.error = req.flash('error');
     next();
 })
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.get('/fakeuser', async (req, res) => {
+    const user = new User({ email: 'razi@gmail', username: 'razi99' });
+    const registeredUser = await User.register(user, 'chick');
+    res.send(registeredUser);
+})
+
+//*** USER ROUTES***//
+app.use('/', userRoutes);
 
 //*** CAMPGROUND ROUTES***//
 app.use('/campgrounds', campgroundRoutes)
