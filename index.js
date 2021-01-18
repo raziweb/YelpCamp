@@ -41,8 +41,9 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 app.use(flash()); //for flash messages
 
-app.use((req, res, next) => { //middleware to get access to the flash message a variable in any template b/w a req res cycle
+app.use((req, res, next) => { //middleware to get access to the flash message as a variable in any template b/w a req res cycle
     res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
     next();
 })
 
