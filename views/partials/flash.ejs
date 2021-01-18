@@ -1,0 +1,13 @@
+ <% if(success && success.length){ %> <!--success will always be there with or without the message, therefore we must also check length -->
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= success %> 
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>  
+
+<% if(error && error.length){ %> <!--error will always be there with or without the message, therefore we must also check length -->
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
