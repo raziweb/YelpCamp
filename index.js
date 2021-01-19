@@ -18,7 +18,8 @@ const userRoutes = require('./routes/users');
 mongoose.connect("mongodb://localhost:27017/yelp-camp", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useFindAndModify: false
+    useFindAndModify: false,
+    useCreateIndex: true
 })
 .then(()=>console.log('Database Connected'))
 .catch(err => console.log('Couldnt Connect', err))
