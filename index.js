@@ -46,22 +46,18 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 app.use(flash()); //for flash messages
 
-app.use((req, res, next) => { //middleware to get access to the flash message as a variable in any template b/w a req res cycle
-    res.locals.success = req.flash('success');
-    res.locals.error = req.flash('error');
-    next();
-})
-
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-app.get('/fakeuser', async (req, res) => {
-    const user = new User({ email: 'razi@gmail', username: 'razi99' });
-    const registeredUser = await User.register(user, 'chick');
-    res.send(registeredUser);
+app.use((req, res, next) => { //middleware to get access to the flash message as a variable in any template b/w a req res cycle
+    //res.locals are available in every template, kind of like global variables
+    res.locals.currentUser = req.user; //when someone is logged in we have access to this variable else it is undefined
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    next();
 })
 
 //*** USER ROUTES***//
