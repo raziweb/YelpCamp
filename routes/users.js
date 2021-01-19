@@ -34,7 +34,13 @@ router.post('/login', passport.authenticate('local', { failureFlash: true, failu
     //Everything related to authentication happens in the passport.authenticate() middleware
     //Like looking up the username in the DB and matching the password etc
     req.flash('success', 'Welcome back');
-    res.redirect('/campgrounds')
+    if (req.session.returnTo) { // in case we were redirected from some other page to login page
+        const url = req.session.returnTo;
+        delete req.session.returnTo; //deleting the returnTo path
+        res.redirect(url); //going to the original page    
+    } else {
+        res.redirect('/campgrounds') 
+    }
 })
 
 router.get('/logout', (req, res) => {
