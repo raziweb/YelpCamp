@@ -18,12 +18,15 @@
 					<li class="list-group-item"><i>Submitted by-</i><%= campground.author.username %></li>
 					<li class="list-group-item">$<%= campground.price %> per Night</li>
 				</ul>
+				<% if(currentUser && currentUser._id.equals(campground.author._id)){ %>
+				<!-- Showing these buttons only if the currentUser is the author of the campground -->
 				<div class="card-body">
 					<a href="/campgrounds/<%= campground._id %>/edit" class="btn btn-info">Edit</a>
 					<form action="/campgrounds/<%= campground._id %>?_method=DELETE" method="POST" class="d-inline">
 						<button class="btn btn-danger">Delete</button>
 					</form>
 				</div>
+				<% } %> 
 			</div>
 		</div>
 
