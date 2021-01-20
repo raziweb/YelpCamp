@@ -7,6 +7,10 @@ const reviewSchema = new Schema({
         type: Number,
         min: 0,
         max: 5
+    },
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
     }
 })
 
