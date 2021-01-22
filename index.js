@@ -1,3 +1,6 @@
+if (process.env.NODE_ENV !== "production") { //requiring environment variables when in development
+    require('dotenv').config()
+}
 const express = require('express');
 const path = require('path');
 const ejsMate = require('ejs-mate');
