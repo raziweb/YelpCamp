@@ -14,6 +14,10 @@ imageSchema.virtual('thumbnail').get(function () {
     return this.url.replace('/upload', '/upload/w_200,h_130')
 })
 
+//mongoose does not include virtual properties when converting the data to JSON and passing it to the client side
+//so we need to pass the below option into the schema
+const opts = { toJSON: { virtuals: true } };
+
 const campgroundSchema = new Schema({
     title: String,
     images: [imageSchema],
@@ -39,6 +43,13 @@ const campgroundSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Review'
     }]
+}, opts)
+
+//we will use this virtual property to render popup link on the cluster map
+campgroundSchema.virtual('properties.popupMarkup').get(function () {
+    return `
+        <strong><a href="/campgrounds/${this._id}">${this.title}</a></strong>
+        <p>${this.description.substring(0,25)}....</p>`
 })
 
 //mongoose middleware to delete all associated reviews when deleting a campground
