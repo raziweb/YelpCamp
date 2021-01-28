@@ -64,6 +64,10 @@ app.use((req, res, next) => { //middleware to get access to the flash message as
     next();
 })
 
+app.get('/', (req, res) => {
+    res.render('home');
+})
+
 //*** USER ROUTES***//
 app.use('/', userRoutes);
 
