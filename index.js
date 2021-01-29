@@ -12,6 +12,7 @@ const methodOverride = require('method-override');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const User = require('./models/user');
+const mongoSanitize = require('express-mongo-sanitize');
 
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
@@ -31,7 +32,10 @@ const app = express();
 
 app.use(express.urlencoded({ extended: true })); //to parse form data
 app.use(methodOverride('_method')); //to use HTTP verbs other than GET and POST
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'))); //to prevent mongo injection
+app.use(mongoSanitize({
+    replaceWith: '_'
+}))
 
 app.set('view engine', 'ejs');
 app.engine('ejs', ejsMate); //ejs itself has different engines
