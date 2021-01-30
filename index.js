@@ -18,9 +18,12 @@ const helmet = require('helmet');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
 const userRoutes = require('./routes/users');
+const mongoDBStore = require('connect-mongo')(session);
+const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/yelp-camp";
 
 //Connecting to our yelp-camp mongoDb
-mongoose.connect("mongodb://localhost:27017/yelp-camp", {
+//"mongodb://localhost:27017/yelp-camp" (local)
+mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
@@ -42,8 +45,18 @@ app.set('view engine', 'ejs');
 app.engine('ejs', ejsMate); //ejs itself has different engines
 app.set('views', path.join(__dirname, 'views'));
 
+const secret = process.env.SECRET || 'xyz123';
+const store = new mongoDBStore({
+    url: dbUrl,
+    secret,
+    touchAfter: 24 * 3600 //seconds (session will resave only after 24 hrs if no changes made)
+})
+store.on('error', function (e) {
+    console.log("SESSION STORE ERROR", e);
+})
 const sessionConfig = {
-    secret: 'xyz123',
+    store,
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -141,6 +154,7 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render('error', {err});
 })
 
-app.listen(3000, ()=>{
-    console.log('Server listening on port 3000');
+const port = process.env.PORT || 3000;
+app.listen(port, ()=>{
+    console.log(`Server listening on port ${port}`);
 })
